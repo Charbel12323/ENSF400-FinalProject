@@ -8,3 +8,7 @@ RUN gradle clean build --no-daemon
 FROM openjdk:8-jre-alpine
 WORKDIR /app
 
+#3 Adjusting path to our built jar
+COPY --from=builder /home/gradle/project/build/libs/*.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]
