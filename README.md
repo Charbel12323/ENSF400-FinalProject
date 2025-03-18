@@ -1,3 +1,68 @@
+# 🚀 ENSF400 Final Project - Docker Usage Guide
+
+## 1. 🔑 Authenticate to GitHub Container Registry (GHCR)
+
+First, log in to GHCR so you can pull the private container image.
+
+### Generate a GitHub Personal Access Token (PAT)
+1. Go to [GitHub Tokens](https://github.com/settings/tokens).
+2. Click **"Generate new token (classic)"**.
+3. Select scopes:
+   - `read:packages` ✅
+   - `repo` (if private repo) ✅
+4. Copy your **Personal Access Token (PAT)**.
+
+### Login to GHCR
+Open **PowerShell** (or CMD), and run:
+```bash
+docker logout ghcr.io
+docker login ghcr.io
+```
+
+- **Username** → your GitHub username  
+- **Password** → paste your **PAT**
+
+Alternatively, you can use:
+```bash
+echo YOUR_PAT | docker login ghcr.io -u YOUR_USERNAME --password-stdin
+```
+
+---
+
+## 2. 📦 Pull the Docker Image
+
+Run the following to pull the image:
+```bash
+docker pull charbel123456/ensf400-finalproject:v1.0
+```
+
+---
+
+## 3. ▶️ Run the Docker Container
+
+Run the container from the image:
+```bash
+docker run -d -p 8080:8080 charbel123456/ensf400-finalproject:v1.0
+```
+
+- `-d` runs it in detached mode.
+- `-p 8080:8080` maps the container port 8080 to your local machine’s port 8080.
+
+---
+
+## 4. ⏹️ Stop the Container
+First, list running containers:
+```bash
+docker ps
+```
+
+Then stop the container by name or ID:
+```bash
+docker stop CONTAINER_NAME_OR_ID
+```
+
+---
+
 ## Demo - demonstrates an application and tests
 
 This is an application by [Coveros](https://www.coveros.com/) to demonstrate good
