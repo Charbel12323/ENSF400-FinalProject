@@ -6,7 +6,7 @@ WORKDIR /home/gradle/project
 COPY . .
 
 # Clean and build the project while skipping tests (-x test)
-RUN gradle clean build -x test --no-daemon --refresh-dependencies
+RUN gradle clean build -x test -x expensesBdd --no-daemon --refresh-dependencies
 
 # Stage 2: Deploy the application using Tomcat (JRE 11)
 FROM tomcat:9-jre11
