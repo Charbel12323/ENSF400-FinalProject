@@ -44,7 +44,7 @@ services:
     ports:
       - "9888:8080"
     command: >
-      zap.sh -daemon -host 0.0.0.0 -port 8080 -config api.key=f237dcdeec1e9c3fb58afdc68f7c4829 -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true 
+      zap.sh -daemon -host 0.0.0.0 -port 8080 -config api.key=5f48f9595b7c1724aa907721b3032007 -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true 
 
 
 networks:
