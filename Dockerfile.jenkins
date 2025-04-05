@@ -26,8 +26,12 @@ RUN wget https://jmeter-plugins.org/get/ -O /opt/apache-jmeter-5.4.3/lib/ext/jme
 
 # Install Docker (docker.io package) and create a symlink for docker CLI
 RUN apt-get update && \
-    apt-get install -y docker.io && \
-    ln -s /usr/bin/docker /usr/local/bin/docker && \
+    apt-get install -y curl && \
+    curl -fsSL https://get.docker.com -o get-docker.sh && \
+    sh get-docker.sh && \
+    rm get-docker.sh && \
+    # Ensure the docker binary is in the PATH (usually at /usr/bin/docker)
+    ln -sf /usr/bin/docker /usr/local/bin/docker && \
     apt-get clean && \
     usermod -aG docker jenkins
 
