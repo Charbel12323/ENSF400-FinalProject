@@ -24,9 +24,10 @@ RUN wget https://jmeter-plugins.org/get/ -O /opt/apache-jmeter-5.4.3/lib/ext/jme
     java -cp /opt/apache-jmeter-5.4.3/lib/ext/jmeter-plugins-manager.jar org.jmeterplugins.repository.PluginManagerCMDInstaller && \
     /opt/apache-jmeter-5.4.3/bin/PluginsManagerCMD.sh install jpgc-standard jpgc-corrected
 
-# Install Docker (docker.io package) and add the jenkins user to the docker group
+# Install Docker (docker.io package) and create a symlink for docker CLI
 RUN apt-get update && \
     apt-get install -y docker.io && \
+    ln -s /usr/bin/docker /usr/local/bin/docker && \
     apt-get clean && \
     usermod -aG docker jenkins
 
