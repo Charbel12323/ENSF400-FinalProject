@@ -25,15 +25,32 @@ RUN wget https://jmeter-plugins.org/get/ -O /opt/apache-jmeter-5.4.3/lib/ext/jme
     /opt/apache-jmeter-5.4.3/bin/PluginsManagerCMD.sh install jpgc-standard jpgc-corrected
 
 # Install Docker (docker.io package) and create a symlink for docker CLI
+# Install Docker and add jenkins user to the docker group
+# Install Docker and add jenkins user to the docker group
+# Define an argument for the host's docker GID
+ARG DOCKER_HOST_GID=107
+
+# Install Docker, create group with specific GID, add jenkins user
 RUN apt-get update && \
     apt-get install -y curl && \
     curl -fsSL https://get.docker.com -o get-docker.sh && \
     sh get-docker.sh && \
     rm get-docker.sh && \
-    # Ensure the docker binary is in the PATH (usually at /usr/bin/docker)
-    ln -sf /usr/bin/docker /usr/local/bin/docker && \
     apt-get clean && \
-    usermod -aG docker jenkins
+    # Check if a group with the target GID already exists
+    if ! getent group ${DOCKER_HOST_GID} > /dev/null; then \
+        # If not, create a new group 'hostdocker' with the specific GID
+        groupadd -g ${DOCKER_HOST_GID} hostdocker; \
+    else \
+        # If GID exists, find its name. We'll add jenkins to this existing group.
+        EXISTING_GROUP_NAME=$(getent group ${DOCKER_HOST_GID} | cut -d: -f1); \
+        echo "Group with GID ${DOCKER_HOST_GID} already exists, named ${EXISTING_GROUP_NAME}. Adding jenkins user."; \
+    fi && \
+    # Add the jenkins user to the group that has the required GID
+    usermod -aG ${DOCKER_HOST_GID} jenkins && \
+    # Also add jenkins to the 'docker' group created by the script (if it exists)
+    usermod -aG docker jenkins || echo "Group 'docker' not found or user already added."
+
 
 # Switch back to the jenkins user
 USER jenkins

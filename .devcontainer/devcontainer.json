@@ -1,0 +1,10 @@
+{
+    "name": "My Codespace",
+    "image": "mcr.microsoft.com/vscode/devcontainers/base:ubuntu",
+    "features": {
+      "ghcr.io/devcontainers/features/docker-from-docker:1": {}
+    },
+    "settings": {},
+    "extensions": []
+  }
+  

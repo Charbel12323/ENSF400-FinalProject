@@ -28,6 +28,8 @@ services:
     # Jenkins will start using its default entrypoint (jenkins.sh)
     # pipenv, chromium, and chromium-driver are now pre-installed.
       - /var/run/docker.sock:/var/run/docker.sock
+    group_add:
+      - docker
 
   demo-app:
     image: charbel123456/ensf400-finalproject:API_TEST_Passing-Charbel-f2530aa
