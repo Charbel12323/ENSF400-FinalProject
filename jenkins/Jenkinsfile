@@ -211,29 +211,20 @@ pipeline {
 //       }
 //     }
 
-        stage('Build & Push Docker Image') {
-            steps {
-                script {
-                    echo "Building Docker image: ${env.IMAGE_TAG}"
-                    // Build using the tag defined in environment
-                    sh "docker build -t ${env.IMAGE_TAG} ."
-
-                    // Login, Push, and Logout using Jenkins Credentials
-                    withCredentials([usernamePassword(credentialsId: env.DOCKER_CREDENTIALS_ID, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        // Login to Docker Hub (docker.io is the default registry)
-                        // Use --password-stdin for better security (avoids password in process list)
-                        sh "echo ${env.DOCKER_PASSWORD} | docker login -u ${env.DOCKER_USER} --password-stdin"
-
-                        // Push the image
-                        echo "Pushing Docker image: ${env.IMAGE_TAG}"
-                        sh "docker push ${env.IMAGE_TAG}"
-
-                        // Logout after push (good practice)
-                        sh "docker logout"
-                    }
-                }
-            }
+    stage('Build & Push Docker Image') {
+      steps {
+        script {
+          def dockerImage = "charbel123456/ensf400-finalproject:${GIT_COMMIT}"
+          echo "Building Docker image: ${dockerImage}"
+          sh "docker build -t ${dockerImage} ."
+          // Log in to Docker Hub using stored credentials
+          withDockerRegistry(credentialsId: 'dockerhub-credentials', url: '') {
+            echo "Pushing Docker image to registry..."
+            sh "docker push ${dockerImage}"
+          }
         }
+      }
+    }
 
     // This is the stage where we deploy to production.  If any test
     // fails, we won't get here.  Note that we aren't really doing anything - this
