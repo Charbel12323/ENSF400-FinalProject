@@ -214,14 +214,12 @@ pipeline {
     stage('Build & Push Docker Image') {
       steps {
         script {
+          // Building a unique Docker image using the commit hash
           def dockerImage = "charbel123456/ensf400-finalproject:${GIT_COMMIT}"
           echo "Building Docker image: ${dockerImage}"
           sh "docker build -t ${dockerImage} ."
-          // Log in to Docker Hub using stored credentials
-          withDockerRegistry(credentialsId: 'dockerhub-credentials', url: '') {
-            echo "Pushing Docker image to registry..."
-            sh "docker push ${dockerImage}"
-          }
+          echo "Pushing Docker image to registry..."
+          sh "docker push ${dockerImage}"
         }
       }
     }
