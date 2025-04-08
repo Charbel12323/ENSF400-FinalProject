@@ -127,6 +127,102 @@ Replace `<YOUR_SONAR_TOKEN>` with your generated token.
   ```
 - Use the retrieved password to unlock Jenkins.
 
+<<<<<<< HEAD
+Bring up your Docker environment by running:
+
+```bash
+docker-compose up -d
+```
+
+Once docker has built everything zap, sonarqube and the demo app should be working. For jeckins u must write this in the terminal 
+
+``` bash
+sudo chown -R 1000:1000 ./jenkins_home
+chmod -R 775 ./jenkins_home
+```
+
+Once thats done,
+
+build jenkins again
+
+```bash
+docker-compose up jenkins -d
+```
+After starting, verify that the following ports are set:
+
+- Demo App: Port 8080
+- Jenkins: Port 8090
+- SonarQube: Port 9000
+
+## Step 5: Configure SonarQube
+
+### 5.1 Access SonarQube
+Open your browser and navigate to:
+http://localhost:9000
+
+### 5.2 Create a Project
+Create a new project with the exact title: ENSF400
+
+### 5.3 Generate a User Token
+- Go to My Account in SonarQube.
+- Create a new user token.
+
+### 5.4 Update Gradle Configuration
+Update your Gradle configuration files with the newly generated SonarQube token:
+
+In gradle.properties:
+```
+sonar.token=<YOUR_SONAR_TOKEN>
+```
+
+In build.gradle (around line 450):
+```
+String token = "<YOUR_SONAR_TOKEN>"  // Or retrieve from Gradle properties / env variable
+```
+
+Replace: `<YOUR_SONAR_TOKEN>` with the token you created.
+
+## Step 6: Configure Jenkins
+
+### 6.1 Access Jenkins
+Open your browser and navigate to:
+http://localhost:8090
+
+### 6.2 Retrieve the Initial Admin Password
+Run the following command to get the password:
+
+```bash
+docker exec -it jenkins cat /var/jenkins_home/secrets/initialAdminPassword
+```
+
+Use the output to unlock Jenkins.
+
+### 6.3 Set Up Your Jenkins Project
+- Create a new project: Use your GitHub repository URL.
+- Configure SCM: Set up source control management to monitor your repository.
+- Enable Webhooks:
+  - Configure the project to use GitHub webhooks.
+  - Ensure that automated builds are triggered on pull requests.
+- Verify: Confirm that the webhook in your GitHub repository points to your Jenkins endpoint (e.g., http://<your-domain-or-ip>:8090/github-webhook/).
+- Make sure the port 8090 is public not private so it can reach it
+
+### Make sure u configure my docker credentials into jenkins which is in a secure file in submission
+
+Before building Make sure  u run this command to remove permissions for the docker image so it can build successfully
+
+```bash
+sudo chmod 666 /var/run/docker.sock
+```
+
+## Final Notes
+
+### API Key:
+All instances of the API key in your configuration (Jenkinsfile and Docker Compose file) must be updated to your generated key.
+
+### Ports:
+Ensure that ports 8080, 8090, and 9000 are available and not blocked by other services.
+
+=======
 #### 6.3 Set Up Your Jenkins Project
 - **Create a New Project**:
   - Use your GitHub repository URL.
@@ -154,13 +250,24 @@ Replace `<YOUR_SONAR_TOKEN>` with your generated token.
   - Make sure to replace the API key in your Jenkinsfile and docker-compose.yml with your generated key.
 - **Ports**:
   - Verify that ports 8080, 8090, and 9000 are available and not blocked by other services.
+>>>>>>> c214a9091bcc45f13a04e9ebbfc6951e6ad90df4
 
 ## Conclusion
 
 Following this guide, you've:
 
+<<<<<<< HEAD
+- Generated a custom API key.
+- Updated the Jenkinsfile and Docker Compose configuration with your API key.
+- Started your Docker environment.
+- Configured SonarQube with a new project and updated tokens.
+- Set up Jenkins to trigger builds via GitHub webhooks.
+
+
+=======
 - Generated and applied a custom API key.
 - Updated your Jenkinsfile and Docker Compose configuration.
 - Started your Docker environment with ZAP, SonarQube, and the demo app.
 - Configured SonarQube with a new project and updated its token.
 - Set up Jenkins for automated builds via GitHub webhooks.
+>>>>>>> c214a9091bcc45f13a04e9ebbfc6951e6ad90df4

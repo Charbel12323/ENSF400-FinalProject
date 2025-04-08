@@ -1,27 +1,56 @@
 pipeline {
-
   agent any
 
-  // This trigger will cause the pipeline to be invoked when GitHub sends an event.
   triggers {
     githubPush()
   }
 
   environment {
     HTTP_PROXY = 'http://zap:8080'
-    NO_PROXY = 'demo-app'
+    NO_PROXY   = 'demo-app'
   }
 
   stages {
-
-    stage('Build') {
+    // 1. Container Build Stage
+    stage('Container Build') {
+      // Run on pull requests (CHANGE_ID set) and master branch
+      when {
+        anyOf {
+          expression { return env.CHANGE_ID != null }
+          branch 'master'
+        }
+      }
       steps {
-        sh './gradlew clean assemble'
+        script {
+          // For pull requests, build only; for master branch, build and push.
+          if (env.CHANGE_ID) {
+            echo "Building Docker image (PR build): ${GIT_COMMIT}"
+            sh "docker build -t charbel123456/ensf400-finalproject:${GIT_COMMIT} ."
+          } else {
+            echo "Building and pushing Docker image (master branch): ${GIT_COMMIT}"
+            sh "docker build -t charbel123456/ensf400-finalproject:${GIT_COMMIT} ."
+            withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials',
+                                              usernameVariable: 'DOCKERHUB_USERNAME',
+                                              passwordVariable: 'DOCKERHUB_TOKEN')]) {
+              sh 'docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_TOKEN"'
+            }
+            sh "docker push charbel123456/ensf400-finalproject:${GIT_COMMIT}"
+          }
+        }
       }
     }
 
+    // 2. Unit Tests Stage
     stage('Unit Tests') {
+      // Run on pull requests and master branch
+      when {
+        anyOf {
+          expression { return env.CHANGE_ID != null }
+          branch 'master'
+        }
+      }
       steps {
+        echo "Running unit tests..."
         sh './gradlew test'
       }
       post {
@@ -31,7 +60,29 @@ pipeline {
       }
     }
 
+    // 3. SonarQube Static Analysis Stage
+    stage('Static Analysis') {
+      // Run on pull requests and master branch
+      when {
+        anyOf {
+          expression { return env.CHANGE_ID != null }
+          branch 'master'
+        }
+      }
+      steps {
+        echo "Starting SonarQube analysis..."
+        sh './gradlew sonarqube'
+        // Give SonarQube time to process the report before checking the gate.
+        sleep 5
+        sh './gradlew checkQualityGate'
+      }
+    }
+
+    // Additional stages will run only on the master branch
     stage('Database Tests') {
+      when {
+        branch 'master'
+      }
       steps {
         sh './gradlew integrate'
       }
@@ -43,6 +94,9 @@ pipeline {
     }
 
     stage('BDD Tests') {
+      when {
+        branch 'master'
+      }
       steps {
         sh './gradlew generateCucumberReports'
         sh './gradlew jacocoTestReport'
@@ -54,15 +108,10 @@ pipeline {
       }
     }
 
-    stage('Static Analysis') {
-      steps {
-        sh './gradlew sonarqube'
-        sleep 5
-        sh './gradlew checkQualityGate'
-      }
-    }
-
     stage('Deploy to Test') {
+      when {
+        branch 'master'
+      }
       steps {
         sh './gradlew deployToTestWindowsLocal'
         sh 'PIPENV_IGNORE_VIRTUALENVS=1 pipenv install'
@@ -72,6 +121,9 @@ pipeline {
     }
 
     stage('API Tests') {
+      when {
+        branch 'master'
+      }
       steps {
         sh './gradlew runApiTests'
       }
@@ -83,6 +135,9 @@ pipeline {
     }
 
     stage('UI BDD Tests') {
+      when {
+        branch 'master'
+      }
       environment {
         HTTP_PROXY = ''
       }
@@ -98,6 +153,9 @@ pipeline {
     }
 
     stage('Clear WDM Cache') {
+      when {
+        branch 'master'
+      }
       steps {
         echo "Attempting to clear WebDriverManager cache..."
         sh 'rm -rf jenkins_home/.cache/selenium || echo "Cache directory not found or could not be removed."'
@@ -106,12 +164,15 @@ pipeline {
     }
 
     stage('UI Tests') {
+      when {
+        branch 'master'
+      }
       steps {
         sh '''
           cd src/ui_tests/java
           chmod +x gradlew
           ./gradlew clean test --refresh-dependencies        
-          '''
+        '''
       }
       post {
         always {
@@ -121,62 +182,67 @@ pipeline {
     }
 
     stage('Security: Dependency Analysis') {
+      when {
+        branch 'master'
+      }
       steps {
         sh './gradlew dependencyCheckAnalyze'
       }
     }
 
     stage('Performance Tests') {
+      when {
+        branch 'master'
+      }
       steps {
         sh './gradlew runPerfTests'
       }
     }
 
     stage('Mutation Tests') {
+      when {
+        branch 'master'
+      }
       steps {
         sh './gradlew pitest'
       }
     }
 
     stage('Build Documentation') {
+      when {
+        branch 'master'
+      }
       steps {
         sh './gradlew javadoc'
       }
     }
 
     stage('Collect Zap Security Report') {
+      when {
+        branch 'master'
+      }
       steps {
         sh 'mkdir -p build/reports/zap'
         sh 'curl "http://zap:8080/OTHER/core/other/htmlreport/?apikey=e02e6c167c1018f6f087f95a2d64e56c" --proxy zap:8080 > build/reports/zap/zap_report.html'
       }
     }
 
-    stage('Build & Push Docker Image') {
-      steps {
-        script {
-          def dockerImage = "charbel123456/ensf400-finalproject:${GIT_COMMIT}"
-          echo "Building Docker image: ${dockerImage}"
-          sh "docker build -t ${dockerImage} ."
-          
-          withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', 
-                                              usernameVariable: 'DOCKERHUB_USERNAME', 
-                                              passwordVariable: 'DOCKERHUB_TOKEN')]) {
-            echo "Logging into Docker Hub..."
-            sh 'docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_TOKEN"'
-          }
-          
-          echo "Pushing Docker image to registry..."
-          sh "docker push ${dockerImage}"
-        }
-      }
-    }
-
     stage('Deploy to Prod') {
+      when {
+        branch 'master'
+      }
       steps {
         sh 'sleep 5'
       }
     }
-
   }
 
+  post {
+    success {
+      echo "Pipeline completed successfully."
+    }
+    failure {
+      echo "Pipeline failed."
+    }
+  }
 }
