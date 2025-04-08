@@ -447,7 +447,7 @@ static void isQualityGateGood() {
     String sonarUrl = "http://sonarqube:9000/api/qualitygates/project_status?projectKey=ENSF400"
 
     // Your personal SonarQube token
-    String token = "squ_29fed432ce74f33a5a874ecb25571a8e98661e6a"  // Or retrieve from Gradle properties / env variable
+    String token = "squ_8ab333fea83a8cb90ffbb1fa1c2d6168bcad732a"  // Or retrieve from Gradle properties / env variable
 
     try {
         URL url = new URL(sonarUrl)

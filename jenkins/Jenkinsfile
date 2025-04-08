@@ -181,4 +181,36 @@ pipeline {
 
   }
 
+  post {
+        success {
+            script {
+                echo "[Post Stage] Pipeline finished successfully. Setting GitHub PR status to SUCCESS."
+                // Assumes build was triggered by a PR event and GitHub Integration plugin is configured.
+                setGitHubPullRequestStatus context: 'Jenkins CI Build', message: 'All checks passed!', state: 'SUCCESS'
+            }
+        }
+        failure {
+            script {
+                echo "[Post Stage] Pipeline failed. Setting GitHub PR status to FAILURE."
+                setGitHubPullRequestStatus context: 'Jenkins CI Build', message: 'Build failed! Check Jenkins logs.', state: 'FAILURE'
+            }
+        }
+        unstable {
+            // Unstable typically means build succeeded, but tests failed or analysis thresholds breached.
+            // Usually treated as a failure for PR checks.
+            script {
+                echo "[Post Stage] Pipeline is unstable (e.g., test failures). Setting GitHub PR status to FAILURE."
+                setGitHubPullRequestStatus context: 'Jenkins CI Build', message: 'Build unstable (check tests/analysis)!', state: 'FAILURE'
+            }
+        }
+        aborted {
+            script {
+                echo "[Post Stage] Pipeline was aborted. Setting GitHub PR status to ERROR."
+                setGitHubPullRequestStatus context: 'Jenkins CI Build', message: 'Build aborted!', state: 'ERROR'
+            }
+        }
+       
+  } 
+
+
 }
