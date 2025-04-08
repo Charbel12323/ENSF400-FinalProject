@@ -13,21 +13,21 @@ pipeline {
   stages {
     // 1. Container Build Stage
     stage('Container Build') {
-      // Run on pull requests (CHANGE_ID set) and main branch
+      // Run on pull requests (CHANGE_ID set) and master branch
       when {
         anyOf {
           expression { return env.CHANGE_ID != null }
-          branch 'main'
+          branch 'master'
         }
       }
       steps {
         script {
-          // For pull requests, build only; for main branch, build and push.
+          // For pull requests, build only; for master branch, build and push.
           if (env.CHANGE_ID) {
             echo "Building Docker image (PR build): ${GIT_COMMIT}"
             sh "docker build -t charbel123456/ensf400-finalproject:${GIT_COMMIT} ."
           } else {
-            echo "Building and pushing Docker image (main branch): ${GIT_COMMIT}"
+            echo "Building and pushing Docker image (master branch): ${GIT_COMMIT}"
             sh "docker build -t charbel123456/ensf400-finalproject:${GIT_COMMIT} ."
             withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials',
                                               usernameVariable: 'DOCKERHUB_USERNAME',
@@ -42,11 +42,11 @@ pipeline {
 
     // 2. Unit Tests Stage
     stage('Unit Tests') {
-      // Run on pull requests and main branch
+      // Run on pull requests and master branch
       when {
         anyOf {
           expression { return env.CHANGE_ID != null }
-          branch 'main'
+          branch 'master'
         }
       }
       steps {
@@ -62,11 +62,11 @@ pipeline {
 
     // 3. SonarQube Static Analysis Stage
     stage('Static Analysis') {
-      // Run on pull requests and main branch
+      // Run on pull requests and master branch
       when {
         anyOf {
           expression { return env.CHANGE_ID != null }
-          branch 'main'
+          branch 'master'
         }
       }
       steps {
@@ -78,10 +78,10 @@ pipeline {
       }
     }
 
-    // Additional stages will run only on the main branch
+    // Additional stages will run only on the master branch
     stage('Database Tests') {
       when {
-        branch 'main'
+        branch 'master'
       }
       steps {
         sh './gradlew integrate'
@@ -95,7 +95,7 @@ pipeline {
 
     stage('BDD Tests') {
       when {
-        branch 'main'
+        branch 'master'
       }
       steps {
         sh './gradlew generateCucumberReports'
@@ -110,7 +110,7 @@ pipeline {
 
     stage('Deploy to Test') {
       when {
-        branch 'main'
+        branch 'master'
       }
       steps {
         sh './gradlew deployToTestWindowsLocal'
@@ -122,7 +122,7 @@ pipeline {
 
     stage('API Tests') {
       when {
-        branch 'main'
+        branch 'master'
       }
       steps {
         sh './gradlew runApiTests'
@@ -136,7 +136,7 @@ pipeline {
 
     stage('UI BDD Tests') {
       when {
-        branch 'main'
+        branch 'master'
       }
       environment {
         HTTP_PROXY = ''
@@ -154,7 +154,7 @@ pipeline {
 
     stage('Clear WDM Cache') {
       when {
-        branch 'main'
+        branch 'master'
       }
       steps {
         echo "Attempting to clear WebDriverManager cache..."
@@ -165,7 +165,7 @@ pipeline {
 
     stage('UI Tests') {
       when {
-        branch 'main'
+        branch 'master'
       }
       steps {
         sh '''
@@ -183,7 +183,7 @@ pipeline {
 
     stage('Security: Dependency Analysis') {
       when {
-        branch 'main'
+        branch 'master'
       }
       steps {
         sh './gradlew dependencyCheckAnalyze'
@@ -192,7 +192,7 @@ pipeline {
 
     stage('Performance Tests') {
       when {
-        branch 'main'
+        branch 'master'
       }
       steps {
         sh './gradlew runPerfTests'
@@ -201,7 +201,7 @@ pipeline {
 
     stage('Mutation Tests') {
       when {
-        branch 'main'
+        branch 'master'
       }
       steps {
         sh './gradlew pitest'
@@ -210,7 +210,7 @@ pipeline {
 
     stage('Build Documentation') {
       when {
-        branch 'main'
+        branch 'master'
       }
       steps {
         sh './gradlew javadoc'
@@ -219,7 +219,7 @@ pipeline {
 
     stage('Collect Zap Security Report') {
       when {
-        branch 'main'
+        branch 'master'
       }
       steps {
         sh 'mkdir -p build/reports/zap'
@@ -229,7 +229,7 @@ pipeline {
 
     stage('Deploy to Prod') {
       when {
-        branch 'main'
+        branch 'master'
       }
       steps {
         sh 'sleep 5'
