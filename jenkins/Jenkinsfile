@@ -1,6 +1,8 @@
 pipeline {
   // Hi this is a test, just for the commit
   //Hi this is the second test
+  //Hi this is a third test
+  //Hi this is a fourth tests
   agent any
 
   // This trigger will cause the pipeline to be invoked when GitHub sends an event.
@@ -68,7 +70,7 @@ pipeline {
         sh './gradlew deployToTestWindowsLocal'
         sh 'PIPENV_IGNORE_VIRTUALENVS=1 pipenv install'
         sh './gradlew waitForHeartBeat'
-        sh 'curl "http://zap:8080/JSON/core/action/newSession/?apikey=e02e6c167c1018f6f087f95a2d64e56c" -s --proxy zap:8080'
+        sh 'curl "http://zap:8080/JSON/core/action/newSession/?apikey=537e196ac9fdda4bfa6f8400c29db8eb" -s --proxy zap:8080'
       }
     }
 
@@ -148,14 +150,20 @@ pipeline {
     stage('Collect Zap Security Report') {
       steps {
         sh 'mkdir -p build/reports/zap'
-        sh 'curl "http://zap:8080/OTHER/core/other/htmlreport/?apikey=e02e6c167c1018f6f087f95a2d64e56c" --proxy zap:8080 > build/reports/zap/zap_report.html'
+        sh 'curl "http://zap:8080/OTHER/core/other/htmlreport/?apikey=537e196ac9fdda4bfa6f8400c29db8eb" --proxy zap:8080 > build/reports/zap/zap_report.html'
       }
     }
 
     stage('Build & Push Docker Image') {
       steps {
         script {
-          def dockerImage = "charbel123456/ensf400-finalproject:${GIT_COMMIT}"
+          // Get the branch name either from the Jenkins environment or via Git.
+          def branchName = env.BRANCH_NAME ?: sh(script: "git rev-parse --abbrev-ref HEAD", returnStdout: true).trim()
+          
+          // Define the image repository and use the branch name as the tag.
+          def imageRepository = "charbel123456/ensf400-finalproject"
+          def dockerImage = "${imageRepository}:${branchName}"
+          
           echo "Building Docker image: ${dockerImage}"
           sh "docker build -t ${dockerImage} ."
           
@@ -170,7 +178,8 @@ pipeline {
           sh "docker push ${dockerImage}"
         }
       }
-    }
+  }
+
 
     stage('Deploy to Prod') {
       steps {
@@ -179,5 +188,7 @@ pipeline {
     }
 
   }
+
+
 
 }

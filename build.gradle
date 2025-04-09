@@ -447,7 +447,7 @@ static void isQualityGateGood() {
     String sonarUrl = "http://sonarqube:9000/api/qualitygates/project_status?projectKey=ENSF400"
 
     // Your personal SonarQube token
-    String token = "squ_29fed432ce74f33a5a874ecb25571a8e98661e6a"  // Or retrieve from Gradle properties / env variable
+    String token = "squ_8ab333fea83a8cb90ffbb1fa1c2d6168bcad732a"  // Or retrieve from Gradle properties / env variable
 
     try {
         URL url = new URL(sonarUrl)
@@ -589,10 +589,14 @@ dependencyCheck {
     // if we don't include the specific configurations to scan, it will scan everything,
     // which means getting into the dependencies of tomcat and jetty, which should
     // have no bearing on us.
-    scanConfigurations = ['default']
+  scanConfigurations = ['default']
     showSummary = false
-    autoUpdate = true
-    cveValidForHours = 24 * 30 * 12 // about a year.
+    // === CHANGE THIS LINE ===
+    autoUpdate = false // Disable automatic NVD updates during the build
+    // =======================
+    // Set how long the *local* cache is considered 'fresh' if autoUpdate is false
+    // Setting this lower (e.g., 7 days) encourages more frequent manual/external updates.
+    cveValidForHours = 24 * 7 // e.g., 1 week validity for the cache
     format = 'HTML' // options are  (HTML, XML, CSV, JSON, VULN, ALL).
     failBuildOnCVSS = 8 // see https://www.first.org/cvss/specification-document#5-Qualitative-Severity-Rating-Scale
 }
