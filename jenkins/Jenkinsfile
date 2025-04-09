@@ -153,25 +153,25 @@ pipeline {
       }
     }
 
-    stage('Build & Push Docker Image') {
-      steps {
-        script {
-          def dockerImage = "charbel123456/ensf400-finalproject:${GIT_COMMIT}"
-          echo "Building Docker image: ${dockerImage}"
-          sh "docker build -t ${dockerImage} ."
+    // stage('Build & Push Docker Image') {
+    //   steps {
+    //     script {
+    //       def dockerImage = "charbel123456/ensf400-finalproject:${GIT_COMMIT}"
+    //       echo "Building Docker image: ${dockerImage}"
+    //       sh "docker build -t ${dockerImage} ."
           
-          withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', 
-                                              usernameVariable: 'DOCKERHUB_USERNAME', 
-                                              passwordVariable: 'DOCKERHUB_TOKEN')]) {
-            echo "Logging into Docker Hub..."
-            sh 'docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_TOKEN"'
-          }
+    //       withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', 
+    //                                           usernameVariable: 'DOCKERHUB_USERNAME', 
+    //                                           passwordVariable: 'DOCKERHUB_TOKEN')]) {
+    //         echo "Logging into Docker Hub..."
+    //         sh 'docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_TOKEN"'
+    //       }
           
-          echo "Pushing Docker image to registry..."
-          sh "docker push ${dockerImage}"
-        }
-      }
-    }
+    //       echo "Pushing Docker image to registry..."
+    //       sh "docker push ${dockerImage}"
+    //     }
+    //   }
+    // }
 
     stage('Deploy to Prod') {
       steps {
