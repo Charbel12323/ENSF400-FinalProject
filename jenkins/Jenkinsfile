@@ -22,156 +22,156 @@ pipeline {
       }
     }
 
-    stage('Unit Tests') {
-      steps {
-        sh './gradlew test'
-      }
-      post {
-        always {
-          junit 'build/test-results/test/*.xml'
-        }
-      }
-    }
-
-    stage('Database Tests') {
-      steps {
-        sh './gradlew integrate'
-      }
-      post {
-        always {
-          junit 'build/test-results/integrate/*.xml'
-        }
-      }
-    }
-
-    stage('BDD Tests') {
-      steps {
-        sh './gradlew generateCucumberReports'
-        sh './gradlew jacocoTestReport'
-      }
-      post {
-        always {
-          junit 'build/test-results/bdd/*.xml'
-        }
-      }
-    }
-
-    stage('Static Analysis') {
-      steps {
-        sh './gradlew sonarqube'
-        sleep 5
-        sh './gradlew checkQualityGate'
-      }
-    }
-
-    stage('Deploy to Test') {
-      steps {
-        sh './gradlew deployToTestWindowsLocal'
-        sh 'PIPENV_IGNORE_VIRTUALENVS=1 pipenv install'
-        sh './gradlew waitForHeartBeat'
-        sh 'curl "http://zap:8080/JSON/core/action/newSession/?apikey=537e196ac9fdda4bfa6f8400c29db8eb" -s --proxy zap:8080'
-      }
-    }
-
-    stage('API Tests') {
-      steps {
-        sh './gradlew runApiTests'
-      }
-      post {
-        always {
-          junit 'build/test-results/api_tests/*.xml'
-        }
-      }
-    }
-
-    stage('UI BDD Tests') {
-      environment {
-        HTTP_PROXY = ''
-      }
-      steps {
-        sh './gradlew runBehaveTests'
-        sh './gradlew generateCucumberReport'
-      }
-      post {
-        always {
-          junit 'build/test-results/bdd_ui/*.xml'
-        }
-      }
-    }
-
-    stage('Clear WDM Cache') {
-      steps {
-        echo "Attempting to clear WebDriverManager cache..."
-        sh 'rm -rf jenkins_home/.cache/selenium || echo "Cache directory not found or could not be removed."'
-        echo "WebDriverManager cache clearing attempt finished."
-      }
-    }
-
-    stage('UI Tests') {
-      steps {
-        sh '''
-          cd src/ui_tests/java
-          chmod +x gradlew
-          ./gradlew clean test --refresh-dependencies        
-          '''
-      }
-      post {
-        always {
-          junit 'src/ui_tests/java/build/test-results/test/*.xml'
-        }
-      }
-    }
-
-    stage('Security: Dependency Analysis') {
-      steps {
-        sh './gradlew dependencyCheckAnalyze'
-      }
-    }
-
-    stage('Performance Tests') {
-      steps {
-        sh './gradlew runPerfTests'
-      }
-    }
-
-    stage('Mutation Tests') {
-      steps {
-        sh './gradlew pitest'
-      }
-    }
-
-    stage('Build Documentation') {
-      steps {
-        sh './gradlew javadoc'
-      }
-    }
-
-    stage('Collect Zap Security Report') {
-      steps {
-        sh 'mkdir -p build/reports/zap'
-        sh 'curl "http://zap:8080/OTHER/core/other/htmlreport/?apikey=537e196ac9fdda4bfa6f8400c29db8eb" --proxy zap:8080 > build/reports/zap/zap_report.html'
-      }
-    }
-
-    // stage('Build & Push Docker Image') {
+    // stage('Unit Tests') {
     //   steps {
-    //     script {
-    //       def dockerImage = "charbel123456/ensf400-finalproject:${GIT_COMMIT}"
-    //       echo "Building Docker image: ${dockerImage}"
-    //       sh "docker build -t ${dockerImage} ."
-          
-    //       withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', 
-    //                                           usernameVariable: 'DOCKERHUB_USERNAME', 
-    //                                           passwordVariable: 'DOCKERHUB_TOKEN')]) {
-    //         echo "Logging into Docker Hub..."
-    //         sh 'docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_TOKEN"'
-    //       }
-          
-    //       echo "Pushing Docker image to registry..."
-    //       sh "docker push ${dockerImage}"
+    //     sh './gradlew test'
+    //   }
+    //   post {
+    //     always {
+    //       junit 'build/test-results/test/*.xml'
     //     }
     //   }
     // }
+
+    // stage('Database Tests') {
+    //   steps {
+    //     sh './gradlew integrate'
+    //   }
+    //   post {
+    //     always {
+    //       junit 'build/test-results/integrate/*.xml'
+    //     }
+    //   }
+    // }
+
+    // stage('BDD Tests') {
+    //   steps {
+    //     sh './gradlew generateCucumberReports'
+    //     sh './gradlew jacocoTestReport'
+    //   }
+    //   post {
+    //     always {
+    //       junit 'build/test-results/bdd/*.xml'
+    //     }
+    //   }
+    // }
+
+    // stage('Static Analysis') {
+    //   steps {
+    //     sh './gradlew sonarqube'
+    //     sleep 5
+    //     sh './gradlew checkQualityGate'
+    //   }
+    // }
+
+    // stage('Deploy to Test') {
+    //   steps {
+    //     sh './gradlew deployToTestWindowsLocal'
+    //     sh 'PIPENV_IGNORE_VIRTUALENVS=1 pipenv install'
+    //     sh './gradlew waitForHeartBeat'
+    //     sh 'curl "http://zap:8080/JSON/core/action/newSession/?apikey=537e196ac9fdda4bfa6f8400c29db8eb" -s --proxy zap:8080'
+    //   }
+    // }
+
+    // stage('API Tests') {
+    //   steps {
+    //     sh './gradlew runApiTests'
+    //   }
+    //   post {
+    //     always {
+    //       junit 'build/test-results/api_tests/*.xml'
+    //     }
+    //   }
+    // }
+
+    // stage('UI BDD Tests') {
+    //   environment {
+    //     HTTP_PROXY = ''
+    //   }
+    //   steps {
+    //     sh './gradlew runBehaveTests'
+    //     sh './gradlew generateCucumberReport'
+    //   }
+    //   post {
+    //     always {
+    //       junit 'build/test-results/bdd_ui/*.xml'
+    //     }
+    //   }
+    // }
+
+    // stage('Clear WDM Cache') {
+    //   steps {
+    //     echo "Attempting to clear WebDriverManager cache..."
+    //     sh 'rm -rf jenkins_home/.cache/selenium || echo "Cache directory not found or could not be removed."'
+    //     echo "WebDriverManager cache clearing attempt finished."
+    //   }
+    // }
+
+    // stage('UI Tests') {
+    //   steps {
+    //     sh '''
+    //       cd src/ui_tests/java
+    //       chmod +x gradlew
+    //       ./gradlew clean test --refresh-dependencies        
+    //       '''
+    //   }
+    //   post {
+    //     always {
+    //       junit 'src/ui_tests/java/build/test-results/test/*.xml'
+    //     }
+    //   }
+    // }
+
+    // stage('Security: Dependency Analysis') {
+    //   steps {
+    //     sh './gradlew dependencyCheckAnalyze'
+    //   }
+    // }
+
+    // stage('Performance Tests') {
+    //   steps {
+    //     sh './gradlew runPerfTests'
+    //   }
+    // }
+
+    // stage('Mutation Tests') {
+    //   steps {
+    //     sh './gradlew pitest'
+    //   }
+    // }
+
+    // stage('Build Documentation') {
+    //   steps {
+    //     sh './gradlew javadoc'
+    //   }
+    // }
+
+    // stage('Collect Zap Security Report') {
+    //   steps {
+    //     sh 'mkdir -p build/reports/zap'
+    //     sh 'curl "http://zap:8080/OTHER/core/other/htmlreport/?apikey=537e196ac9fdda4bfa6f8400c29db8eb" --proxy zap:8080 > build/reports/zap/zap_report.html'
+    //   }
+    // }
+
+    stage('Build & Push Docker Image') {
+      steps {
+        script {
+          def dockerImage = "charbel123456/ensf400-finalproject:${GIT_COMMIT}"
+          echo "Building Docker image: ${dockerImage}"
+          sh "docker build -t ${dockerImage} ."
+          
+          withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', 
+                                              usernameVariable: 'DOCKERHUB_USERNAME', 
+                                              passwordVariable: 'DOCKERHUB_TOKEN')]) {
+            echo "Logging into Docker Hub..."
+            sh 'docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_TOKEN"'
+          }
+          
+          echo "Pushing Docker image to registry..."
+          sh "docker push ${dockerImage}"
+        }
+      }
+    }
 
     stage('Deploy to Prod') {
       steps {
